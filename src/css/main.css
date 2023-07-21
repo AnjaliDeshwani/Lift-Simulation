@@ -1,0 +1,99 @@
+body {
+  margin: 0;
+}
+.main-container {
+  min-width: 60rem;
+}
+.input-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  height: 100vh;
+  justify-content: center;
+}
+
+.input-div {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+
+.lift-floor-section {
+  border: 1px solid black;
+  display: none;
+}
+
+.floor-container {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+.floor-row {
+  border: 1px solid black;
+  border-bottom: none;
+  display: flex;
+  gap: 5rem;
+  height: 7rem;
+}
+
+.floor-row:last-child {
+  border-bottom: 1px solid black;
+}
+
+.floor-info {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 5px;
+  padding: 20px;
+}
+
+.lift-container {
+  display: flex;
+  gap: 1rem;
+  /* position: relative; */
+}
+
+.lift {
+  width: 5rem;
+  height: 7rem;
+  background: slategrey;
+  position: absolute;
+  /* top: 0;  */
+  transition: top 2s ease;
+}
+
+.left-side,
+.right-side {
+  position: absolute;
+  top: 0;
+  height: 100%;
+  transition: width 2.5s;
+  width: 49%;
+}
+
+.left-side {
+  left: 0;
+  background-color: #333;
+  border-right: 1px solid white;
+}
+
+.right-side {
+  right: 0;
+  background-color: #333;
+}
+
+.door-open .left-side {
+  width: 0;
+}
+
+.door-open .right-side {
+  width: 0;
+}
+
+.error-msg {
+  color: red;
+  position: relative;
+}
