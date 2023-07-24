@@ -5,6 +5,7 @@ const inputSection = document.querySelector(".input-section");
 const liftFloorSection = document.querySelector(".lift-floor-section");
 const floorContainer = document.querySelector(".floor-container");
 const errorMsg = document.querySelector(".error-msg");
+const backButton = document.querySelector(".back-btn");
 const liftRequestStore = [];
 const liftAvaialbleStatus = {};
 const liftFloorMapping = {};
@@ -49,11 +50,8 @@ const findLift = (requestedFloor) => {
   );
   const floorNum = Number(requestedFloor.id.split("-")[1]);
 
-  console.log("allBusyLifts: ", allBusyLifts);
-
   if (allBusyLifts) {
     liftRequestStore.push(requestedFloorId);
-    console.log("liftRequestStore: ", liftRequestStore);
   }
 
   const findNearestIdleLift = () => {
@@ -63,7 +61,6 @@ const findLift = (requestedFloor) => {
       let floorDiff = 0;
       if (!lifts[i].classList.contains("busy")) {
         floorDiff = Math.abs(floorNum - liftFloorMapping[lifts[i].id]);
-        console.log("floorDiff: ", floorDiff);
         if (minDistance > floorDiff) {
           nearestLift = lifts[i];
           minDistance = floorDiff;
@@ -77,8 +74,6 @@ const findLift = (requestedFloor) => {
     }
     liftFloorMapping[nearestLift.id] = floorNum;
     moveLift(nearestLift, calcParentTop, alreadyOnFloor);
-
-    console.log("liftFloorMapping: ", liftFloorMapping);
   };
 
   if (liftRequestStore.length === 0) {
@@ -189,6 +184,13 @@ const createLiftLayout = () => {
   addLifts(liftValue);
 };
 
+const goBack = () => {
+  inputSection.style.display = "flex";
+  liftFloorSection.style.display = "none";
+  floorContainer.innerHTML = "";
+};
+
+backButton.addEventListener("click", goBack);
 createBtn.addEventListener("click", createLiftLayout);
 
 floor.addEventListener("keyup", () => (errorMsg.textContent = ""));
