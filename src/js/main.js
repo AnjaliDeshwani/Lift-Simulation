@@ -6,89 +6,84 @@ const liftFloorSection = document.querySelector(".lift-floor-section");
 const floorContainer = document.querySelector(".floor-container");
 const errorMsg = document.querySelector(".error-msg");
 const backButton = document.querySelector(".back-btn");
-const liftRequestStore = [];
-const liftAvaialbleStatus = {};
-const liftFloorMapping = {};
+let liftRequestStore = [];
+let liftAvaialbleStatus = {};
+let liftFloorMapping = {};
 
 let floorValue, liftValue;
 
-const moveLift = (nearestLift, calcTop, alreadyOnFloor) => {
+const moveLift = (nearestLift, calcParentTop) => {
   liftAvaialbleStatus[nearestLift.id] = false;
-  let timeToOpenDoor, timeToCloseDoor, timeToRemoveBusy;
-  nearestLift.style.top = `${calcTop}px`;
+  nearestLift.style.top = `${calcParentTop}px`;
   nearestLift.classList.add("busy");
-
-  if (alreadyOnFloor) {
-    timeToOpenDoor = 0;
-    timeToCloseDoor = 2500;
-    timeToRemoveBusy = 3500;
-  } else {
-    timeToOpenDoor = 3000;
-    timeToCloseDoor = 6000;
-    timeToRemoveBusy = 9000;
-  }
 
   setTimeout(() => {
     nearestLift.classList.add("door-open");
-  }, timeToOpenDoor);
-  setTimeout(() => {
-    nearestLift.classList.remove("door-open");
-  }, timeToCloseDoor);
-  setTimeout(() => {
-    nearestLift.classList.remove("busy");
-    liftAvaialbleStatus[nearestLift.id] = true;
-  }, timeToRemoveBusy);
+    setTimeout(() => {
+      nearestLift.classList.remove("door-open");
+      setTimeout(() => {
+        nearestLift.classList.remove("busy");
+        liftAvaialbleStatus[nearestLift.id] = true;
+        if (liftRequestStore.length > 0) {
+          let requestedFloor = liftRequestStore.shift();
+          const floorNum = Number(requestedFloor.id.split("-")[1]);
+          const calcParentTop = requestedFloor.offsetTop;
+          let nearestLift = findNearestIdleLift(floorNum);
+          moveLift(nearestLift, calcParentTop);
+        }
+      }, 2000);
+    }, 2000);
+  }, 3000);
 };
 
-const findLift = (requestedFloor) => {
-  const requestedFloorId = requestedFloor.id;
-  const calcParentTop = requestedFloor.offsetTop;
-  let alreadyOnFloor = false;
+const findNearestIdleLift = (floorNum) => {
+  const lifts = document.querySelectorAll(".lift");
   let nearestLift;
-  let allBusyLifts = Object.values(liftAvaialbleStatus).every(
-    (value) => value === false
-  );
-  const floorNum = Number(requestedFloor.id.split("-")[1]);
-
-  if (allBusyLifts) {
-    liftRequestStore.push(requestedFloorId);
-  }
-
-  const findNearestIdleLift = () => {
-    const lifts = document.querySelectorAll(".lift");
-    let minDistance = Infinity;
-    for (let i = 0; i < lifts.length; i++) {
-      let floorDiff = 0;
-      if (!lifts[i].classList.contains("busy")) {
-        floorDiff = Math.abs(floorNum - liftFloorMapping[lifts[i].id]);
-        if (minDistance > floorDiff) {
-          nearestLift = lifts[i];
-          minDistance = floorDiff;
-        }
+  let minDistance = Infinity;
+  for (let i = 0; i < lifts.length; i++) {
+    let floorDiff = 0;
+    console.log("outside if");
+    if (!lifts[i].classList.contains("busy")) {
+      console.log("lifts[i]:", lifts[i]);
+      console.log(
+        "liftFloorMapping[lifts[i].id]: ",
+        liftFloorMapping[lifts[i].id]
+      );
+      floorDiff = Math.abs(floorNum - liftFloorMapping[lifts[i].id]);
+      console.log("inside if...");
+      console.log("minDistance: ", minDistance);
+      console.log("floorDiff: ", floorDiff);
+      if (minDistance > floorDiff) {
+        nearestLift = lifts[i];
+        minDistance = floorDiff;
       }
     }
-    const calcNearestLiftTop = nearestLift.offsetTop;
-
-    if (calcParentTop === calcNearestLiftTop) {
-      alreadyOnFloor = true;
-    }
-    liftFloorMapping[nearestLift.id] = floorNum;
-    moveLift(nearestLift, calcParentTop, alreadyOnFloor);
-  };
-
-  if (liftRequestStore.length === 0) {
-    findNearestIdleLift();
-  } else {
-    setTimeout(() => {
-      liftRequestStore.shift();
-      findNearestIdleLift();
-    }, 6000);
   }
+  console.log("nearestLift: ", nearestLift);
+  return nearestLift;
 };
 
 const callLift = (event) => {
   const requestedFloor = event.target.parentNode.parentNode;
-  findLift(requestedFloor);
+  const requestedFloorId = requestedFloor.id;
+  const floorNum = Number(requestedFloor.id.split("-")[1]);
+  const calcParentTop = requestedFloor.offsetTop;
+
+  let nearestLift;
+
+  let allBusyLifts = Object.values(liftAvaialbleStatus).every(
+    (value) => value === false
+  );
+
+  if (allBusyLifts) {
+    liftRequestStore.push(requestedFloor);
+  }
+
+  if (liftRequestStore.length === 0) {
+    nearestLift = findNearestIdleLift(floorNum);
+    liftFloorMapping[nearestLift.id] = floorNum;
+    moveLift(nearestLift, calcParentTop);
+  }
 };
 
 const createFloor = (floorNumber) => {
@@ -188,6 +183,9 @@ const goBack = () => {
   inputSection.style.display = "flex";
   liftFloorSection.style.display = "none";
   floorContainer.innerHTML = "";
+  liftRequestStore = [];
+  liftAvaialbleStatus = {};
+  liftFloorMapping = {};
 };
 
 backButton.addEventListener("click", goBack);
