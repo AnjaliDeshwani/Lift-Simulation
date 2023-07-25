@@ -42,24 +42,14 @@ const findNearestIdleLift = (floorNum) => {
   let minDistance = Infinity;
   for (let i = 0; i < lifts.length; i++) {
     let floorDiff = 0;
-    console.log("outside if");
     if (!lifts[i].classList.contains("busy")) {
-      console.log("lifts[i]:", lifts[i]);
-      console.log(
-        "liftFloorMapping[lifts[i].id]: ",
-        liftFloorMapping[lifts[i].id]
-      );
       floorDiff = Math.abs(floorNum - liftFloorMapping[lifts[i].id]);
-      console.log("inside if...");
-      console.log("minDistance: ", minDistance);
-      console.log("floorDiff: ", floorDiff);
       if (minDistance > floorDiff) {
         nearestLift = lifts[i];
         minDistance = floorDiff;
       }
     }
   }
-  console.log("nearestLift: ", nearestLift);
   return nearestLift;
 };
 
