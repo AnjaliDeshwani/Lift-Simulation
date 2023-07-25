@@ -74,7 +74,7 @@ body {
   background: slategrey;
   position: absolute;
   /* top: 0;  */
-  transition: top 2s ease;
+  /* transition: top 2s ease; */
 }
 
 .left-side,
@@ -82,7 +82,7 @@ body {
   position: absolute;
   top: 0;
   height: 100%;
-  transition: width 2s;
+  transition: width 2.5s;
   width: 49%;
 }
 

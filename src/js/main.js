@@ -12,9 +12,14 @@ let liftFloorMapping = {};
 
 let floorValue, liftValue;
 
-const moveLift = (nearestLift, calcParentTop) => {
+const moveLift = (nearestLift, calcParentTop, floorNum) => {
   liftAvaialbleStatus[nearestLift.id] = false;
+  const floorsToPass = Math.abs(floorNum - liftFloorMapping[nearestLift.id]);
+  const transitionDuration = floorsToPass * 2;
+
   nearestLift.style.top = `${calcParentTop}px`;
+  nearestLift.style.transition = `top ${transitionDuration}s ease`;
+
   nearestLift.classList.add("busy");
 
   setTimeout(() => {
@@ -24,16 +29,18 @@ const moveLift = (nearestLift, calcParentTop) => {
       setTimeout(() => {
         nearestLift.classList.remove("busy");
         liftAvaialbleStatus[nearestLift.id] = true;
+
+        liftFloorMapping[nearestLift.id] = floorNum;
         if (liftRequestStore.length > 0) {
           let requestedFloor = liftRequestStore.shift();
-          const floorNum = Number(requestedFloor.id.split("-")[1]);
+          let calcFloorNumber = Number(requestedFloor.id.split("-")[1]);
           const calcParentTop = requestedFloor.offsetTop;
-          let nearestLift = findNearestIdleLift(floorNum);
-          moveLift(nearestLift, calcParentTop);
+          let nearestLift = findNearestIdleLift(calcFloorNumber);
+          moveLift(nearestLift, calcParentTop, calcFloorNumber);
         }
       }, 2000);
     }, 2000);
-  }, 3000);
+  }, floorsToPass * 2000);
 };
 
 const findNearestIdleLift = (floorNum) => {
@@ -55,7 +62,6 @@ const findNearestIdleLift = (floorNum) => {
 
 const callLift = (event) => {
   const requestedFloor = event.target.parentNode.parentNode;
-  const requestedFloorId = requestedFloor.id;
   const floorNum = Number(requestedFloor.id.split("-")[1]);
   const calcParentTop = requestedFloor.offsetTop;
 
@@ -71,8 +77,7 @@ const callLift = (event) => {
 
   if (liftRequestStore.length === 0) {
     nearestLift = findNearestIdleLift(floorNum);
-    liftFloorMapping[nearestLift.id] = floorNum;
-    moveLift(nearestLift, calcParentTop);
+    moveLift(nearestLift, calcParentTop, floorNum);
   }
 };
 
