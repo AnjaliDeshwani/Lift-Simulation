@@ -9,6 +9,7 @@ const backButton = document.querySelector(".back-btn");
 let liftRequestStore = [];
 let liftAvaialbleStatus = {};
 let liftFloorMapping = {};
+let occupiedFloor = {};
 
 let floorValue, liftValue;
 
@@ -21,7 +22,7 @@ const moveLift = (nearestLift, calcParentTop, floorNum) => {
   nearestLift.style.transition = `top ${transitionDuration}s ease`;
 
   nearestLift.classList.add("busy");
-
+  occupiedFloor[floorNum] = true;
   setTimeout(() => {
     nearestLift.classList.add("door-open");
     setTimeout(() => {
@@ -29,7 +30,7 @@ const moveLift = (nearestLift, calcParentTop, floorNum) => {
       setTimeout(() => {
         nearestLift.classList.remove("busy");
         liftAvaialbleStatus[nearestLift.id] = true;
-
+        occupiedFloor[floorNum] = false;
         liftFloorMapping[nearestLift.id] = floorNum;
         if (liftRequestStore.length > 0) {
           let requestedFloor = liftRequestStore.shift();
@@ -64,20 +65,24 @@ const callLift = (event) => {
   const requestedFloor = event.target.parentNode.parentNode;
   const floorNum = Number(requestedFloor.id.split("-")[1]);
   const calcParentTop = requestedFloor.offsetTop;
+  if (!occupiedFloor[floorNum]) {
+    let allBusyLifts = Object.values(liftAvaialbleStatus).every(
+      (value) => value === false
+    );
 
-  let nearestLift;
+    if (allBusyLifts) {
+      liftRequestStore.push(requestedFloor);
+    }
 
-  let allBusyLifts = Object.values(liftAvaialbleStatus).every(
-    (value) => value === false
-  );
-
-  if (allBusyLifts) {
-    liftRequestStore.push(requestedFloor);
-  }
-
-  if (liftRequestStore.length === 0) {
-    nearestLift = findNearestIdleLift(floorNum);
-    moveLift(nearestLift, calcParentTop, floorNum);
+    if (liftRequestStore.length === 0) {
+      let nearestLift = findNearestIdleLift(floorNum);
+      moveLift(nearestLift, calcParentTop, floorNum);
+    }
+  } else {
+    console.log(
+      "You have already called the lift at this floor: ",
+      occupiedFloor
+    );
   }
 };
 
@@ -108,6 +113,7 @@ const createFloor = (floorNumber) => {
   }
 
   floorRow.appendChild(floorInfo);
+  occupiedFloor[floorNumber] = false;
   return floorRow;
 };
 
